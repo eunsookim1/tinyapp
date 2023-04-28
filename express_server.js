@@ -3,6 +3,11 @@ const app = express();
 const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs");
+app.use(express.urlencoded({ extended: true }));
+
+const generateRandomString = () => {
+  return Math.random().toString(36).slice(2,8);
+};
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -18,6 +23,12 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+
+app.get("/urls/new", (req, res) => {
+  // const templateVars = { urls: urlDatabase };
+  res.render("urls_new");
+});
+
 app.get("/urls/:id", (req, res) => {
   // console.log(req.params.id);
   const templateVars = {
@@ -25,6 +36,11 @@ app.get("/urls/:id", (req, res) => {
     longURL: urlDatabase[req.params.id]
   };
   res.render("urls_show", templateVars);
+});
+
+app.post("/urls", (req, res) => {
+  console.log(req.body); // Log the POST request body to the console
+  res.send(generateRandomString()); // Respond with 'Ok' (we will replace this)
 });
 
 app.listen(PORT, () => {
@@ -49,3 +65,10 @@ app.get("/set", (req, res) => {
 app.get("/fetch", (req, res) => {
   res.send(`a = ${a}`);
 });
+
+
+// // extra code of my own to help myself understand the concept:
+// app.get("/myown", (req, res) => {
+//   const templateVars = { urls: urlDatabase, name:'Eunsoo' };
+//   res.render("urls_myown", templateVars);
+// });
