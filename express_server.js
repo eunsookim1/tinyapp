@@ -74,15 +74,16 @@ app.post("/urls/:id", (req, res) => { // issue with the oldURL not showing.
 app.post("/login", (req, res) => {
   const username = req.body.username;
   res.cookie('username', username);
-
-// try to find out how to make my code clear cookie
-
   res.redirect('/urls');
 });
 
+// logout & clear username cookie
 app.post("/logout", (req, res) => {
-  
-})
+  const username = req.body.username;
+  res.clearCookie('username', username);
+  res.redirect('/urls');
+});
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
