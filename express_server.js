@@ -1,9 +1,11 @@
 const express = require('express');
 const app = express();
+const cookieParser = require('cookie-parser');
 const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser('mySecret'));
 
 const generateRandomString = () => {
   return Math.random().toString(36).slice(2,8);
@@ -19,7 +21,9 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = {
+    username: req.cookies["username"],
+    urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
@@ -66,6 +70,19 @@ app.post("/urls/:id", (req, res) => { // issue with the oldURL not showing.
   res.redirect(`/urls/`);
 });
 
+// inputing username on the header:
+app.post("/login", (req, res) => {
+  const username = req.body.username;
+  res.cookie('username', username);
+
+// try to find out how to make my code clear cookie
+
+  res.redirect('/urls');
+});
+
+app.post("/logout", (req, res) => {
+  
+})
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
