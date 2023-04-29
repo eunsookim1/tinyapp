@@ -29,8 +29,6 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-
-
 app.get("/urls/:id", (req, res) => {
   // console.log(req.params.id);
   const templateVars = {
@@ -51,6 +49,11 @@ app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
   urlDatabase[shortUrl] = longURL;
   res.redirect(`/urls/${shortUrl}`); // Respond with 'Ok' (we will replace this)
+});
+
+app.post("/urls/:id/delete", (req, res) => {
+  delete urlDatabase[req.params.id];
+  res.redirect("/urls/");
 });
 
 app.listen(PORT, () => {
