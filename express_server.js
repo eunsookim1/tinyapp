@@ -30,7 +30,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  // console.log(req.params.id);
+  console.log("urlDatabase", urlDatabase);
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id]
@@ -43,6 +43,9 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
+//"/urls" I can name it anything
+// Ejs will come to server file to look for the right route/requests
+// the click will look for the routes in the server.
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
   const shortUrl = generateRandomString();
@@ -54,6 +57,13 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id];
   res.redirect("/urls/");
+});
+
+app.post("/urls/:id", (req, res) => { // issue with the oldURL not showing.
+  const shortURL = req.params.id;
+  const newLongURL = req.body.longURL;
+  urlDatabase[shortURL] = newLongURL;
+  res.redirect(`/urls/`);
 });
 
 app.listen(PORT, () => {
@@ -75,9 +85,10 @@ app.get("/set", (req, res) => {
   res.send(`a = ${a}`);
 });
  
-app.get("/fetch", (req, res) => {
-  res.send(`a = ${a}`);
-});
+
+// app.get("/fetch", (req, res) => {
+//   res.send(`a = ${a}`);
+// });
 
 
 // // extra code of my own to help myself understand the concept:
