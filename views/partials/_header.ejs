@@ -18,26 +18,22 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-    <% if (!username) { %>
-    <form class="form-inline" action="/login" method="POST">
-      <div class="form-group mb-2">
-        <input
-          class="form-control"
-          type="text"
-          name="username"
-          placeholder="Username"
-          style="width: 300px; margin: 1em"
-        />
-        <button type="submit" class="btn btn-primary" style="background-color: transparent; border: 1px solid black; color: black">Login</button>
-        <% } else { %>
-          Logged in as: <%= username %>! 
-        </form>
+    <% if (user) { %>
+      Logged in as: <%= user.email %>! 
 
-        <form class="form-inline" action="/logout" method="POST">
-        <button type="submit" style="margin-left: 10px;" class="btn btn-outline-dark" style="background-color: transparent; border: 1px solid black; color: black">Logout</button>
-        
-        </form>  
-        <% } %>
+    <form class="form-inline" action="/logout" method="POST">
+    <button type="submit" style="margin-left: 10px;" class="btn btn-outline-dark" style="background-color: transparent; border: 1px solid black; color: black">Logout</button>
+    </form>  
+
+    <% } else { %>
+      <form class="form-inline" action="/login" method="GET">
+        <button type="submit" class="btn btn-primary" style="background-color: transparent; border: 1px solid black; color: black">Login</button>
+      </form>
+
+      <form class="form-inline" action="/register" method="GET">
+        <button type="submit" class="btn btn-primary" style="background-color: transparent; border: 1px solid black; color: black">Register</button>
+        </form>
+    <% } %>
       
   </nav>
 </header>
