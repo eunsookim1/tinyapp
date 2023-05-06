@@ -37,24 +37,73 @@ const getUserByEmail = function(email) {
   return null;
 };
 
+const urlsForUser = function(id) {
+  const urls = {};
+  const keys = Object.keys(urlDatabase);
+  for (const key of keys) {
+    const url = urlDatabase[key]; //urlObj
+    if (url.userID === id) {
+      urls[key] = url; // will add to the new url object
+    }
+  }
+  return urls;
+};
+
+const checkPermissions = function(req, res) {
+  const userID = req.cookies.user_id;
+  const user = users[userID];
+  
+  if (!user) {
+    return res.render("urls_error", { errorMessage: "You are not logged in" });
+  }
+  
+  const id = req.params.id;
+  const url = urlDatabase[id];
+  if (!url) {
+    return res.send("The url does not exist");
+  }
+
+  if (url.userID !== userID) {
+    return res.send("You don't own the URL");
+  }
+
+  if (!urlDatabase[id]) {
+    return res.send("The url does not exist");
+  }
+};
 
 // --------------------------------DATA--------------------------------
 
+// const urlDatabase = {
+//   "b2xVn2": "http://www.lighthouselabs.ca",
+//   "9sm5xK": "http://www.google.com"
+// };
+
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "userRandomID",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "userRandomID1"
+  },
+  ifB11r: {
+    longURL: "https://www.naver.com",
+    userID: "userRandomID"
+  },
 };
 
 const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur",
+    password: "123",
   },
   user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk",
+    password: "123",
   },
 };
 
@@ -66,42 +115,61 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  
+  const userId = req.cookies.user_id;
+  const user = users[userId];
+  if (!user) {
+    // return res.redirect("/login");
+    return res.render("urls_error",{ errorMessage: "You are not logged in" });
+  }
+
+  const urls = urlsForUser(userId);
+  res.render("urls_index", { user, urls });
+}
+);
+
+
+app.get("/urls/new", (req, res) => {
   const userId = req.cookies["user_id"];
   if (userId) {
     const templateVars = {
-      user: users[userId], // a single key-value for the particular user
-      urls: urlDatabase };
-    res.render("urls_index", templateVars);
+      user: users[userId]
+    };
+    res.render("urls_new", templateVars);
   } else {
     res.redirect("/login");
   }
 });
 
-
-app.get("/urls/new", (req, res) => {
-  const userId = req.cookies["user_id"];
-  const templateVars = {
-    user: users[userId]
-  };
-  res.render("urls_new", templateVars);
-});
-
 app.get("/urls/:id", (req, res) => {
-  console.log("urlDatabase", urlDatabase);
-  const userId = req.cookies["user_id"];
-  const templateVars = {
-    user: users[userId],
-    id: req.params.id,
-    longURL: urlDatabase[req.params.id]
+  const userID = req.cookies.user_id;
+  const user = users[userID];
+  if (!user) {
+    return res.render("urls_error", { errorMessage: "You are not logged in" });
+  }
+  const id = req.params.id;
+  const url = urlDatabase[id];
+  if (!url) {
+    return res.send("The url does not exist");
+  }
 
-  };
-  res.render("urls_show", templateVars);
+  if (url.userID !== userID) {
+    return res.send("You don't own the URL");
+  }
+
+  const longURL = urlDatabase[id].longURL;
+  res.render("urls_show", { user, id, longURL });
 });
 
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
-  res.redirect(longURL);
+  const shortURL = req.params.id;
+  const longURL = urlDatabase[shortURL].longURL;
+
+  if (!urlDatabase[shortURL]) {
+    return res.status(404).render('urls_error', { errorMessage: "The id does not exist"});
+  } else {
+    // console.log(urlDatabase[shortURL]);
+    return res.redirect(longURL);
+  }
 });
 
 
@@ -121,47 +189,96 @@ app.get("/register", (req, res) => {
 app.get("/login", (req, res) => {
   const user = req.cookies["user_id"];
   const templateVars = { user };
-  res.render('urls_login', templateVars);
+  if (user) {
+    return res.redirect('/urls');
+  } else {
+    return res.render('urls_login', templateVars);
+  }
 });
 
 // -------------------------POST ROUTE HANDLERS-------------------------
 
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
+  const userID = req.cookies.user_id;
+  const user = users[userID];
+
+  if (!user) {
+    return res.status(404).send("Please login before using Tinyapp");
+  }
+
   const shortUrl = generateRandomString();
   const longURL = req.body.longURL;
-  urlDatabase[shortUrl] = longURL;
-  res.redirect(`/urls/${shortUrl}`); // Respond with 'Ok' (we will replace this)
+  urlDatabase[shortUrl] = { longURL, userID };
+  return res.redirect(`/urls/${shortUrl}`); // Respond with 'Ok' (we will replace this)
+  
 });
 
 app.post("/urls/:id/delete", (req, res) => {
+  const userID = req.cookies.user_id;
+  const user = users[userID];
+  
+  if (!user) {
+    return res.render("urls_error", { errorMessage: "You are not logged in" });
+  }
+  
+  const id = req.params.id;
+  const url = urlDatabase[id];
+  if (!url) {
+    return res.send("The url does not exist");
+  }
+
+  if (url.userID !== userID) {
+    return res.send("You don't own the URL");
+  }
+
+  if (!urlDatabase[id]) {
+    return res.send("The url does not exist");
+  }
+
   delete urlDatabase[req.params.id];
   res.redirect("/urls/");
 });
 
 app.post("/urls/:id", (req, res) => { // issue with the oldURL not showing.
+  const userID = req.cookies.user_id;
+  const user = users[userID];
+  
+  if (!user) {
+    return res.render("urls_error", { errorMessage: "You are not logged in" });
+  }
+  
+  const id = req.params.id;
+  const url = urlDatabase[id];
+  if (!url) {
+    return res.send("The url does not exist");
+  }
+
+  if (url.userID !== userID) {
+    return res.send("You don't own the URL");
+  }
+
   const shortURL = req.params.id;
   const newLongURL = req.body.longURL;
-  urlDatabase[shortURL] = newLongURL;
+  urlDatabase[shortURL].longURL = newLongURL;
   res.redirect(`/urls/`);
 });
 
 // inputing login on the header:
 app.post("/login", (req, res) => {
-  console.log('starting post request');
   const userEmail = req.body.email;
-  console.log('req.body', req.body);
+  // console.log('req.body', req.body);
   const user = getUserByEmail(userEmail);
   
-  if (user) {
-    res.cookie('user_id', user.id);
-    if (user.password === req.body.password) {
-      res.redirect('/urls');
-    } else {
-      return res.status(403).send('Invalid Password');
-    }
+  if (!user) {
+    return res.status(404).render('urls_error', { errorMessage: "User not found. Please register."});
   }
-  return res.status(403).send('User not found. Please register.');
+
+  if (user.password !== req.body.password) {
+    return res.status(403).render('urls_error', { errorMessage: "Invalid Password"});
+  }
+
+  res.cookie('user_id', user.id);
+  res.redirect('/urls');
 });
 
 // logout & clear user_id cookie
@@ -182,10 +299,10 @@ app.post('/register', (req, res) => {
   const userId = generateRandomString();
   const { email, password } = req.body; // { email: req.body.email, password: req.body.password }
   if (email === "" || password === "") {
-    return res.status(400).send('Invalid Credentials');
+    return res.status(400).render('urls_error', { errorMessage: "Invalid Credentials"});
   }
   if (getUserByEmail(req.body.email)) {
-    return res.status(400).send('Email is already taken.');
+    return res.status(400).render('urls_error', { errorMessage: "Email is already taken"});
   }
   users[userId] = { id: userId, email: email, password: password };
   res.cookie('user_id', userId);
