@@ -2,6 +2,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -12,11 +13,6 @@ app.use(morgan('dev'));
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser('mySecret'));
-
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
-
 
 
 // -------------------------HELPER FUNCTIONS-------------------------
@@ -47,29 +43,6 @@ const urlsForUser = function(id) {
     }
   }
   return urls;
-};
-
-const checkPermissions = function(req, res) {
-  const userID = req.cookies.user_id;
-  const user = users[userID];
-  
-  if (!user) {
-    return res.render("urls_error", { errorMessage: "You are not logged in" });
-  }
-  
-  const id = req.params.id;
-  const url = urlDatabase[id];
-  if (!url) {
-    return res.send("The url does not exist");
-  }
-
-  if (url.userID !== userID) {
-    return res.send("You don't own the URL");
-  }
-
-  if (!urlDatabase[id]) {
-    return res.send("The url does not exist");
-  }
 };
 
 // --------------------------------DATA--------------------------------
@@ -273,7 +246,9 @@ app.post("/login", (req, res) => {
     return res.status(404).render('urls_error', { errorMessage: "User not found. Please register."});
   }
 
-  if (user.password !== req.body.password) {
+  const password = req.body.password;
+  if (!bcrypt.compareSync(password, user.password)) {
+    // user.password !== req.body.password) {
     return res.status(403).render('urls_error', { errorMessage: "Invalid Password"});
   }
 
@@ -296,16 +271,18 @@ app.post("/logout", (req, res) => {
 
 
 app.post('/register', (req, res) => {
-  const userId = generateRandomString();
-  const { email, password } = req.body; // { email: req.body.email, password: req.body.password }
+  const id = generateRandomString();
+  const { email, password } = req.body; // { email: req.body.email, password: req.body.password }  Because I'm declaring the password I cannot rename it the same way in line 280.
   if (email === "" || password === "") {
     return res.status(400).render('urls_error', { errorMessage: "Invalid Credentials"});
   }
   if (getUserByEmail(req.body.email)) {
     return res.status(400).render('urls_error', { errorMessage: "Email is already taken"});
   }
-  users[userId] = { id: userId, email: email, password: password };
-  res.cookie('user_id', userId);
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  
+  users[id] = { id, email, password: hashedPassword};
+  res.cookie('user_id', id);
   res.redirect('/urls');
 });
 
@@ -327,7 +304,13 @@ app.get("/set", (req, res) => {
   const a = 1;
   res.send(`a = ${a}`);
 });
+
  
+// -------------------------LISTENER-------------------------
+
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
+});
 
 // app.get("/fetch", (req, res) => {
 //   res.send(`a = ${a}`);
