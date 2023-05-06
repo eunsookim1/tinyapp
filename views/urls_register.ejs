@@ -1,17 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-  <style>
-    p.ex1 {
-      margin-left: 30px;
-    }
-  </style>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
-
     <!-- Bootstrap CSS -->
     <link
       rel="stylesheet"
@@ -26,10 +15,30 @@
 <body>
   
   <%- include('partials/_header') %>
-  
+   <main style="margin: 1em">
   <h1>Register</h1>
-  <p>first time here? Set up your account!</p>
-  <p class="ex1"> 
+  <p>First time here? Set up your account!</p>
+
+    <form method="POST" action="/register" >
+      
+      <div class="row mb-3">
+        <label for="inputEmail3" class="col-sm-1 col-form-label">Email</label>
+        <div class="col-sm-5">
+          <input name="email" type="email" placeholder="Email"  class="form-control" id="inputEmail3">
+        </div>
+      </div>
+      <div class="row mb-3">
+        <label for="inputPassword3" class="col-sm-1 col-form-label">Password</label>
+        <div class="col-sm-5">
+          <input name="password" type="password" placeholder="Password" class="form-control" id="inputPassword3">
+        </div>
+      </div>
+      
+      
+      <button type="submit" class="btn btn-primary">Register</button>
+    </form>
+
+  <!-- <p class="ex1"> 
   <form method="POST" action="/register">
     <label>Email</label>
     <div><input name="email" type="text" placeholder="Email" /></div>
@@ -37,9 +46,9 @@
     <div><input name="password" type="text" placeholder="Passowrd" /></div>
 
     <button type="submit">Register</button>
-  </form>
-  </p>
+  </form> -->
 
+</main>
   <!-- Bootstrap JS -->
   <script
   src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
