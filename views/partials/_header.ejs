@@ -1,6 +1,6 @@
 <header>
   <nav class="navbar navbar-expand-md navbar-dark bg-success">
-    <a class="navbar-brand" href="/urls">TinyApp</a>
+    <a class="navbar-brand" href="/urls" style="font-family:'Courier New', Courier, monospace; font-size: 28px; padding-top: 0em; padding-bottom: 0em"><b>TinyApp</b></a>
     <button
       class="navbar-toggler"
       type="button"
@@ -19,19 +19,19 @@
       </div>
     </div>
     <% if (typeof user !== 'undefined' && user) { %>
-      Logged in as: <%= user.email %>! 
+      <%= user.email %>
 
     <form class="form-inline" action="/logout" method="POST">
-    <button type="submit" style="margin-left: 10px;" class="btn btn-outline-dark" style="background-color: transparent; border: 1px solid black; color: black">Logout</button>
+    <button type="submit" style="margin-left: 10px;" class="btn btn-outline-dark" style="background-color: transparent; border: 1px solid white; color: white">Logout</button>
     </form>  
 
     <% } else { %>
       <form class="form-inline" action="/login" method="GET">
-        <button type="submit" class="btn btn-primary" style="background-color: transparent; border: 1px solid black; color: black">Login</button>
+        <button type="submit" class="btn btn-primary" style="background-color: transparent; border: 1px solid white; color: white; margin-right: 2em"; >Login</button>
       </form>
 
       <form class="form-inline" action="/register" method="GET">
-        <button type="submit" class="btn btn-primary" style="background-color: transparent; border: 1px solid black; color: black">Register</button>
+        <button type="submit" class="btn btn-primary" style="background-color: transparent; border: 1px solid white; color: white">Register</button>
         </form>
     <% } %>
       
